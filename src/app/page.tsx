@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { AsciiCloud } from "@/components/ascii-cloud";
+import { ImpactSection } from "@/components/impact-section";
 
 function Section({
   children,
@@ -78,7 +79,7 @@ export default function Home() {
                   <p className="text-xs text-[var(--muted)] flex items-center gap-1.5 flex-wrap">
                     <a href="https://www.linkedin.com/posts/kyzo_fluar-just-got-acquired-in-an-all-cash-6-activity-7441770654884020224-C1HH" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-[var(--foreground)] transition-colors">2x exited founder</a>
                     &bull;
-                    <a href="https://kyzo.io" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-[var(--foreground)] transition-colors">multiple products</a>
+                    <a href="https://kyzo.io" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-[var(--foreground)] transition-colors">shipped multiple products</a>
                     &bull;
                     <a href="https://github.com/ky-zo" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-[var(--foreground)] transition-colors">
                       OS contributor
@@ -284,26 +285,56 @@ export default function Home() {
             </div>
           </Section>
 
-{/* Case Study */}
+{/* Impact */}
           <Section>
-            <SectionLabel>In Practice</SectionLabel>
+            <SectionLabel>
+              <span
+                className="inline-block size-2.5 rounded-[2px]"
+                style={{
+                  backgroundColor: "oklch(0.58 0.14 70)",
+                  boxShadow: "0 0 6px oklch(0.58 0.14 70 / 0.6), 0 0 14px oklch(0.58 0.14 70 / 0.3)",
+                }}
+              />
+              The Impact
+            </SectionLabel>
 
-            <p className="text-lg sm:text-xl font-semibold tracking-tight leading-snug mb-6" style={{ letterSpacing: "-0.02em" }}>
-              HeyReach: 11 engineers, 6 QA. Full AI adoption.
+            <p className="text-lg sm:text-xl font-semibold tracking-tight leading-snug mb-8" style={{ letterSpacing: "-0.02em" }}>
+              We treat the process as a whole, removing the bottlenecks.
             </p>
 
-            <div className="space-y-4 text-sm text-[var(--muted)]">
-              <p>
-                Got the engineering and QA teams using AI daily. Introduced
-                Claude Code into real workflows. Created better data flow between
-                customer success and development.
-              </p>
-              <p className="italic">
-                This was not a theory exercise. It changed how the company
-                operated.
-              </p>
-            </div>
+            <ImpactSection />
           </Section>
+
+{/* Testimonial */}
+          <div className="border border-[var(--border)] rounded-lg p-6 sm:p-8">
+              <p className="text-sm leading-relaxed text-[var(--muted)] mb-6">
+                &ldquo;Kamil got our 11 engineers and 6 QA using AI daily. Introduced
+                Claude Code into real workflows. Created better data flow between
+                customer success and development. This was not a theory exercise — it changed how the company
+                operated.&rdquo;
+              </p>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Image
+                    src="/heyreach-logo.jpg"
+                    alt="Nikola Velkowski"
+                    width={40}
+                    height={40}
+                    className="rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold">Nikola Velkowski</p>
+                    <p className="text-xs text-[var(--muted)]">HeyReach (+$10m ARR)</p>
+                  </div>
+                </div>
+                <img
+                  src="/heyreach-icon.svg"
+                  alt="HeyReach"
+                  className="h-5 opacity-60"
+                />
+              </div>
+            </div>
 
 {/* Fit */}
           <Section>
