@@ -244,8 +244,8 @@ export function AsciiCloud() {
         (targetOffset.current.y - eyeOffset.current.y) * eyeEase;
 
       // Idle float + mouse lean
-      const floatX = Math.sin(t * 0.4) * 4 + Math.sin(t * 0.9) * 2;
-      const floatY = Math.cos(t * 0.3) * 3 + Math.cos(t * 0.7) * 1.5;
+      const floatX = Math.sin(t * 0.4) * 8 + Math.sin(t * 0.9) * 4 + Math.sin(t * 0.15) * 6;
+      const floatY = Math.cos(t * 0.3) * 6 + Math.cos(t * 0.7) * 3 + Math.cos(t * 0.12) * 5;
       bodyPos.current.x +=
         (bodyTarget.current.x + floatX - bodyPos.current.x) * 0.04;
       bodyPos.current.y +=

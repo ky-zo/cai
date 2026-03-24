@@ -50,7 +50,7 @@ export default function Home() {
                 instead of just experimenting.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 items-start mb-10">
+              <div className="flex flex-col sm:flex-row gap-4 items-center mb-10">
                 <a
                   href="#contact"
                   className="font-mono text-xs font-medium px-5 py-2.5 bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 transition-opacity"
@@ -156,15 +156,22 @@ export default function Home() {
                 Including
               </p>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)]">
-                  <svg width="14" height="14" viewBox="0 0 64 64" fill="none" aria-label="Claude"><rect width="64" height="64" rx="14" fill="#D97757"/><path d="M42.2 35.7c-2 6.7-7.8 10.3-15.5 10.3-8.5 0-15-5.8-15-14.5S18 17 26.7 17c7.5 0 13 3.8 15.2 10.1l-7 2.6c-1.3-3.8-4.2-5.8-8.2-5.8-4.8 0-8.2 3.5-8.2 7.6s3.4 7.6 8.2 7.6c4 0 6.9-2 8.3-5.9l7.2 2.5z" fill="#FFF"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 512 512" fill="none" aria-label="Claude"><path d="M121.525 328.847L208.274 280.096L209.725 275.847L208.274 273.499H204.031L189.517 272.604L139.947 271.263L96.9633 269.474L55.3195 267.237L44.8248 265.001L35 252.031L36.0048 245.545L44.8248 239.619L57.4408 240.737L85.3522 242.638L127.219 245.545L157.587 247.334L202.58 252.031H209.725L210.73 249.123L208.274 247.334L206.376 245.545L163.057 216.138L116.166 185.054L91.6043 167.164L78.3185 158.107L71.6197 149.609L68.717 131.048L80.7747 117.742L96.9633 118.86L101.094 119.979L117.506 132.613L152.563 159.784L198.337 193.552L205.036 199.143L207.716 197.242L208.051 195.9L205.036 190.868L180.139 145.807L153.568 99.9638L141.733 80.9555L138.607 69.5505C137.491 64.8543 136.709 60.9408 136.709 56.1328L150.442 37.4599L158.033 35L176.343 37.4599L184.047 44.1687L195.435 70.2214L213.856 111.257L242.437 167.052L250.811 183.601L255.277 198.919L256.951 203.615H259.854V200.932L262.199 169.512L266.553 130.936L270.795 81.2909L272.247 67.3142L279.169 50.5421L292.901 41.4852L303.619 46.6286L312.439 59.2636L311.211 67.426L305.964 101.529L295.692 154.976L288.994 190.757H292.901L297.367 186.284L315.454 162.244L345.821 124.227L359.219 109.133L374.849 92.4723L384.897 84.5335H403.877L417.833 105.331L411.58 126.799L392.043 151.622L375.854 172.643L352.632 203.951L338.118 228.997L339.457 231.01L342.918 230.674L395.392 219.493L423.75 214.349L457.578 208.535L472.874 215.691L474.549 222.959L468.52 237.83L432.347 246.775L389.921 255.273L326.73 270.256L325.948 270.815L326.842 271.933L355.311 274.617L367.481 275.288H397.29L452.778 279.425L467.292 289.041L476 300.781L474.549 309.727L452.219 321.132L422.075 313.975L351.738 297.203L327.623 291.165H324.274V293.178L344.37 312.857L381.213 346.178L427.323 389.114L429.667 399.737L423.75 408.123L417.498 407.228L376.97 376.703L361.34 362.95L325.948 333.096H323.604V336.226L331.754 348.19L374.849 413.042L377.082 432.945L373.956 439.431L362.791 443.344L350.51 441.108L325.278 405.663L299.265 365.745L278.276 329.965L275.708 331.418L263.315 465.036L257.51 471.857L244.112 477L232.948 468.502L227.03 454.749L232.948 427.578L240.093 392.133L245.898 363.956L251.146 328.959L254.272 317.33L254.049 316.547L251.481 316.883L225.132 353.11L185.052 407.34L153.344 441.331L145.752 444.35L132.578 437.53L133.806 425.342L141.175 414.496L185.052 358.589L211.512 323.927L228.593 303.912L228.482 301.005H227.477L110.919 376.815L90.1529 379.498L81.2213 371.112L82.3377 357.359L86.5802 352.887L121.637 328.735L121.525 328.847Z" fill="#D97757"/></svg>
                   Claude Code
                 </span>
                 <span className="inline-flex items-center gap-1.5 border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)]">
-                  <svg width="14" height="14" viewBox="0 0 100 100" fill="none" aria-label="Cursor"><rect width="100" height="100" rx="20" fill="#000"/><path d="M30 70V30l40 20-40 20z" fill="#FFF"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 512 512" fill="none" aria-label="OpenAI"><g clipPath="url(#oa)"><path d="M439.173 216.769C448.876 187.692 445.534 155.84 430.018 129.392C406.682 88.826 359.771 67.956 313.956 77.777C293.575 54.852 264.292 41.815 233.593 42.002C186.762 41.895 145.211 72 130.803 116.488C100.719 122.64 74.751 141.442 59.555 168.09C36.046 208.549 41.405 259.55 72.813 294.244C63.11 323.321 66.451 355.173 81.968 381.621C105.303 422.187 152.214 443.057 198.029 433.236C218.397 456.161 247.693 469.198 278.392 468.998C325.25 469.118 366.815 438.987 381.222 394.458C411.307 388.306 437.275 369.505 452.471 342.857C475.953 302.397 470.58 251.437 439.186 216.742L439.173 216.769Z" fill="currentColor"/><path d="M278.419 441.095C259.668 441.122 241.505 434.57 227.111 422.574L229.637 421.146L314.798 372.04C319.155 369.571 321.828 364.941 321.802 359.937V240.067L357.793 260.817C358.181 261.004 358.435 261.378 358.488 261.805V361.071C358.435 405.213 322.63 441.002 278.419 441.095Z" fill="var(--background)"/><path d="M106.225 367.663C96.83 351.463 93.448 332.475 96.669 314.047L99.195 315.555L184.357 364.661C188.673 367.183 194.019 367.183 198.35 364.661L302.316 304.719V346.219C302.342 346.646 302.142 347.06 301.808 347.327L215.724 396.953C177.38 418.998 128.411 405.894 106.238 367.663Z" fill="var(--background)"/><path d="M83.812 182.061C93.168 165.835 107.936 153.425 125.524 146.98V149.915V248.141C125.457 253.131 128.13 257.762 132.474 260.23L236.44 320.158L200.448 340.908C200.087 341.149 199.633 341.189 199.232 341.015L113.135 291.349C74.871 269.224 61.747 220.345 83.799 182.074Z" fill="var(--background)"/><path d="M379.525 250.769L275.559 190.828L311.551 170.091C311.912 169.851 312.366 169.811 312.767 169.985L398.864 219.611C437.195 241.722 450.332 290.681 428.187 328.952C418.818 345.152 404.063 357.562 386.488 364.02V262.859C386.528 257.868 383.868 253.251 379.538 250.769Z" fill="var(--background)"/><path d="M415.343 196.94L412.817 195.432L327.656 146.326C323.339 143.804 317.993 143.804 313.662 146.326L209.696 206.267V164.767C209.67 164.34 209.87 163.926 210.204 163.66L296.288 114.073C334.632 91.989 383.655 105.133 405.76 143.43C415.102 159.603 418.484 178.538 415.316 196.94Z" fill="var(--background)"/><path d="M190.13 270.906L154.125 250.156C153.737 249.969 153.484 249.595 153.43 249.168V149.902C153.457 105.706 189.368 69.891 233.633 69.918C252.357 69.918 270.48 76.483 284.874 88.439L282.348 89.867L197.187 138.973C192.83 141.442 190.157 146.059 190.184 151.063L190.13 270.879Z" fill="var(--background)"/><path d="M209.683 228.818L255.993 202.117L302.302 228.805V282.195L255.993 308.883L209.683 282.195V228.818Z" fill="var(--background)"/></g><defs><clipPath id="oa"><rect width="512" height="512"/></clipPath></defs></svg>
+                  Codex
+                </span>
+                <span className="inline-flex items-center gap-1.5 border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)]">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-label="Cursor"><rect width="24" height="24" rx="4.8" fill="#000"/><path d="M7 17V7l10 5-10 5z" fill="#fff"/></svg>
                   Cursor
                 </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)]">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-label="Skills"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                   Skills
@@ -177,10 +184,17 @@ export default function Home() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-label="Workflows"><path d="M3 3h6v6H3zM15 3h6v6h-6zM9 15h6v6H9z"/><path d="M6 9v3h3M18 9v3h-3M12 9v6"/></svg>
                   Workflows
                 </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-1.5 border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)]">
+                  <svg width="14" height="14" viewBox="0 0 120 120" fill="none" aria-label="OpenClaw"><path d="M60 10C30 10 15 35 15 55C15 75 30 95 45 100L45 110L55 110L55 100C55 100 60 102 65 100L65 110L75 110L75 100C90 95 105 75 105 55C105 35 90 10 60 10Z" fill="#E8553A"/><path d="M20 45C5 40 0 50 5 60C10 70 20 65 25 55C28 48 25 45 20 45Z" fill="#E8553A"/><path d="M100 45C115 40 120 50 115 60C110 70 100 65 95 55C92 48 95 45 100 45Z" fill="#E8553A"/><circle cx="45" cy="35" r="6" fill="#050810"/><circle cx="75" cy="35" r="6" fill="#050810"/><circle cx="46" cy="34" r="2" fill="#00e5cc"/><circle cx="76" cy="34" r="2" fill="#00e5cc"/></svg>
+                  OpenClaw
+                </span>
                 <span className="inline-flex items-center gap-1.5 border border-[var(--border)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)]">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-label="Agent Orchestrators"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><path d="M12 8v4M8.5 16.5L10 14M15.5 16.5L14 14"/></svg>
                   Agent Orchestrators
                 </span>
+                </div>
               </div>
 
               <p>
@@ -203,33 +217,33 @@ export default function Home() {
               The Offer
             </SectionLabel>
 
-            <div className="grid sm:grid-cols-2 gap-8 sm:gap-12">
+            <div className="grid sm:grid-cols-2 gap-6 sm:gap-10">
               {/* AI Setup Sprint */}
               <div>
                 <p className="text-lg font-semibold tracking-tight mb-1" style={{ letterSpacing: "-0.02em" }}>
                   AI Setup Sprint
                 </p>
-                <p className="font-mono text-sm text-[var(--muted)] mb-5">
+                <p className="font-mono text-sm text-[var(--muted)] mb-3">
                   $5,000 &bull; 2 weeks
                 </p>
-                <ul className="space-y-2.5 text-sm text-[var(--muted)]">
-                  <li className="flex gap-3">
+                <ul className="space-y-1.5 text-sm text-[var(--muted)]">
+                  <li className="flex gap-2">
                     <span className="font-mono text-[var(--accent)] shrink-0">&gt;</span>
                     Audit current workflows
                   </li>
-                  <li className="flex gap-3">
+                  <li className="flex gap-2">
                     <span className="font-mono text-[var(--accent)] shrink-0">&gt;</span>
                     Set up AI tooling for engineering &amp; QA
                   </li>
-                  <li className="flex gap-3">
+                  <li className="flex gap-2">
                     <span className="font-mono text-[var(--accent)] shrink-0">&gt;</span>
                     4 hands-on workshops
                   </li>
-                  <li className="flex gap-3">
+                  <li className="flex gap-2">
                     <span className="font-mono text-[var(--accent)] shrink-0">&gt;</span>
                     Train the team on tools and patterns
                   </li>
-                  <li className="flex gap-3">
+                  <li className="flex gap-2">
                     <span className="font-mono text-[var(--accent)] shrink-0">&gt;</span>
                     Operating model for what happens next
                   </li>
@@ -241,27 +255,27 @@ export default function Home() {
                 <p className="text-lg font-semibold tracking-tight mb-1" style={{ letterSpacing: "-0.02em" }}>
                   Fractional AI Lead
                 </p>
-                <p className="font-mono text-sm text-[var(--muted)] mb-5">
+                <p className="font-mono text-sm text-[var(--muted)] mb-3">
                   $10,000/mo &bull; ongoing
                 </p>
-                <ul className="space-y-2.5 text-sm text-[var(--muted)]">
-                  <li className="flex gap-3">
+                <ul className="space-y-1.5 text-sm text-[var(--muted)]">
+                  <li className="flex gap-2">
                     <span className="font-mono text-[var(--accent)] shrink-0">&gt;</span>
                     Everything in the Sprint
                   </li>
-                  <li className="flex gap-3">
+                  <li className="flex gap-2">
                     <span className="font-mono text-[var(--accent)] shrink-0">&gt;</span>
                     Ongoing implementation support
                   </li>
-                  <li className="flex gap-3">
+                  <li className="flex gap-2">
                     <span className="font-mono text-[var(--accent)] shrink-0">&gt;</span>
                     Workflow design &amp; automation
                   </li>
-                  <li className="flex gap-3">
+                  <li className="flex gap-2">
                     <span className="font-mono text-[var(--accent)] shrink-0">&gt;</span>
                     Cross-team AI adoption
                   </li>
-                  <li className="flex gap-3">
+                  <li className="flex gap-2">
                     <span className="font-mono text-[var(--accent)] shrink-0">&gt;</span>
                     Embedded in your team&apos;s rhythm
                   </li>
@@ -397,8 +411,12 @@ export default function Home() {
 
           {/* Footer */}
           <footer className="py-8 mt-4">
-            <p className="font-mono text-xs text-[var(--muted)]">
-              CAI &mdash; AI adoption for software teams
+            <p className="font-mono text-xs text-[var(--muted)] flex flex-wrap items-center gap-1.5">
+              <a href="mailto:ai@kyzo.io" className="underline underline-offset-2 hover:text-[var(--foreground)] transition-colors">ai@kyzo.io</a>
+              <span>&bull;</span>
+              <a href="https://x.com/ky__zo" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-[var(--foreground)] transition-colors">@ky__zo</a>
+              <span>&bull;</span>
+              <a href="https://cal.com/kamil-kyzo/discovery" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-[var(--foreground)] transition-colors">cal.com</a>
             </p>
           </footer>
         </div>
