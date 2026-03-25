@@ -266,15 +266,26 @@ function getThreshold(index: number) {
 function CheckMark() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <motion.rect
+        x="2"
+        y="2"
+        width="20"
+        height="20"
+        rx="4"
+        fill="oklch(0.5 0.18 145)"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      />
       <motion.path
-        d="M4 12.5l5.5 5.5L20 7"
-        stroke="oklch(0.5 0.18 145)"
+        d="M7 12.5l3.5 3.5L17 8"
+        stroke="white"
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
         initial={{ pathLength: 0 }}
         animate={{ pathLength: 1 }}
-        transition={{ duration: 0.25, ease: "easeOut" }}
+        transition={{ duration: 0.25, ease: "easeOut", delay: 0.1 }}
       />
     </svg>
   );

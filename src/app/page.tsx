@@ -348,8 +348,8 @@ export default function Home() {
                 alt="HeyReach"
                 width={100}
                 height={20}
-                style={{ width: "auto", height: "auto" }}
-                className="h-5"
+                className="h-5 w-auto"
+                unoptimized
               />
             </div>
           </div>

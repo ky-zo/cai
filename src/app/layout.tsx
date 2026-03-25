@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-sans",
@@ -28,6 +29,11 @@ export default function RootLayout({
       lang="en"
       className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
     >
+      <Script
+          src="//unpkg.com/react-scan/dist/auto.global.js"
+          crossOrigin="anonymous"
+          strategy="beforeInteractive"
+        />
       <body className="min-h-dvh flex flex-col">{children}</body>
     </html>
   );
