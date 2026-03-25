@@ -126,12 +126,27 @@
   }
   body {
     background:
-      radial-gradient(circle at top right, oklch(0.93 0.03 142 / 0.4), transparent 28rem),
-      linear-gradient(180deg, oklch(0.988 0.004 95), var(--background) 34rem);
+      radial-gradient(
+        circle at top right,
+        oklch(0.93 0.03 142 / 0.4),
+        transparent 28rem
+      ), linear-gradient(180deg, oklch(0.988 0.004 95), var(--background) 34rem);
     color: var(--foreground);
   }
   html {
     @apply font-sans;
     scroll-behavior: smooth;
   }
+}
+
+.highlight-on-scroll {
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-size: 0% 40%;
+  background-repeat: no-repeat;
+  background-position: 0 85%;
+  transition: background-size 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.highlight-on-scroll[data-in-view="true"] {
+  background-size: 100% 40%;
 }

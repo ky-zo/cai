@@ -1,15 +1,21 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import { type MotionValue, useMotionValueEvent } from "motion/react";
+import type { MotionValue } from "motion/react";
+import { useEffect, useRef } from "react";
 
 const STAGES = ["PLAN", "CODE", "REVIEW", "TEST", "DEPLOY"];
 const SQ = 5;
-const MAX_DOTS = 65;
+const MAX_DOTS = 120;
 
 const GREENS = [
-  "#39d353", "#26a641", "#006d32", "#0e4429",
-  "#39d353", "#26a641", "#006d32", "#0e4429",
+  "#39d353",
+  "#26a641",
+  "#006d32",
+  "#0e4429",
+  "#39d353",
+  "#26a641",
+  "#006d32",
+  "#0e4429",
 ];
 
 interface Dot {
@@ -21,14 +27,12 @@ interface Dot {
 
 export function PipelineFlow({
   scrollYProgress,
-}: { scrollYProgress: MotionValue<number> }) {
+}: {
+  scrollYProgress: MotionValue<number>;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [openCount, setOpenCount] = useState(0);
-
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
-    setOpenCount(Math.min(Math.floor(v * (STAGES.length + 1)), STAGES.length));
-  });
+  const labelsRef = useRef<(HTMLSpanElement | null)[]>([]);
 
   const S = useRef({
     dots: [] as Dot[],
@@ -40,9 +44,11 @@ export function PipelineFlow({
   });
 
   useEffect(() => {
-    const cvs = canvasRef.current!;
-    const wrap = wrapRef.current!;
-    const ctx = cvs.getContext("2d")!;
+    const cvs = canvasRef.current;
+    const wrap = wrapRef.current;
+    if (!cvs || !wrap) return;
+    const ctx = cvs.getContext("2d");
+    if (!ctx) return;
     const s = S.current;
     let raf = 0;
     let visible = true;
@@ -54,8 +60,8 @@ export function PipelineFlow({
       s.h = r.height;
       cvs.width = r.width * dpr;
       cvs.height = r.height * dpr;
-      cvs.style.width = r.width + "px";
-      cvs.style.height = r.height + "px";
+      cvs.style.width = `${r.width}px`;
+      cvs.style.height = `${r.height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
@@ -89,7 +95,7 @@ export function PipelineFlow({
     const spd = (x: number) => {
       const h = half(x);
       const openness = (h - minH) / (maxH - minH);
-      return 0.02 + 0.98 * openness ** 0.5;
+      return 0.003 + 0.997 * openness ** 0.3;
     };
 
     const frame = () => {
@@ -107,28 +113,80 @@ export function PipelineFlow({
       const cy = h * 0.52;
       const ps = h * 0.7;
 
-      // Update per-stage transitions from scroll
       const progress = scrollYProgress.get();
+      const newOpenCount = Math.min(
+        Math.floor(progress * (STAGES.length + 1)),
+        STAGES.length,
+      );
       for (let i = 0; i < STAGES.length; i++) {
         const threshold = (i + 1) / (STAGES.length + 1);
         const target = progress >= threshold ? 1 : 0;
         s.transitions[i] += (target - s.transitions[i]) * 0.04;
+
+        const el = labelsRef.current[i];
+        if (el) {
+          const isOpen = i < newOpenCount;
+          el.style.color = isOpen ? "var(--accent)" : "oklch(0.55 0.18 25)";
+          el.style.fontWeight = isOpen ? "700" : "500";
+        }
       }
 
       // Spawn
       s.tick++;
-      if (s.tick % 8 === 0 && dots.length < MAX_DOTS) {
+      if (s.tick % 3 === 0 && dots.length < MAX_DOTS) {
         dots.push({
           x: -0.015,
           y: 0.5 + (Math.random() - 0.5) * 0.35,
-          speed: 0.0016 + Math.random() * 0.0008,
+          speed: 0.001 + Math.random() * 0.002,
           colorIdx: s.nid++ % GREENS.length,
         });
       }
 
+      // Sort dots by x so we can enforce spacing at bottlenecks
+      dots.sort((a, b) => a.x - b.x);
+
+      // Build bottleneck info
+      const bottlenecks: { center: number; closedness: number }[] = [];
+      for (let i = 0; i < STAGES.length; i++) {
+        const closedness = 1 - s.transitions[i];
+        if (closedness > 0.1) {
+          bottlenecks.push({
+            center: (i + 0.5) / STAGES.length,
+            closedness,
+          });
+        }
+      }
+
       // Update positions
-      for (const d of dots) {
-        d.x += d.speed * spd(d.x);
+      for (let di = 0; di < dots.length; di++) {
+        const d = dots[di];
+        let s2 = spd(d.x);
+
+        // Drip through bottlenecks: enforce spacing, slow gradually
+        for (const b of bottlenecks) {
+          const approachZone = 0.18;
+          const dist = b.center - d.x;
+          if (dist > -0.02 && dist < approachZone) {
+            const minGap = 0.01 + 0.03 * (1 - b.closedness);
+            for (let j = di + 1; j < dots.length; j++) {
+              const ahead = dots[j];
+              const gap = ahead.x - d.x;
+              if (gap > minGap * 2) break;
+              if (ahead.x > b.center - approachZone && gap < minGap) {
+                // Ease off based on how far from bottleneck center
+                // Dots far away slow gently, dots close stall hard
+                const farness = dist / approachZone; // 1 = far, 0 = at center
+                const throttle = 0.03 + 0.7 * farness * farness;
+                s2 *= throttle;
+                break;
+              }
+            }
+          }
+        }
+
+        // Jitter speed each frame so clumps disperse when released
+        const jitter = 0.8 + Math.random() * 0.4;
+        d.x += d.speed * s2 * jitter;
         d.y += (Math.random() - 0.5) * 0.004;
         const h2 = half(d.x);
         d.y = Math.max(0.5 - h2 + 0.04, Math.min(0.5 + h2 - 0.04, d.y));
@@ -203,16 +261,16 @@ export function PipelineFlow({
   }, [scrollYProgress]);
 
   return (
-    <div>
+    <>
       <div className="flex mb-3">
         {STAGES.map((name, i) => (
           <div key={name} className="flex-1 text-center">
             <span
-              className={`font-mono text-[10px] tracking-widest transition-colors duration-300 ${
-                i < openCount
-                  ? "text-[oklch(0.56_0.11_145)] font-bold"
-                  : "text-[oklch(0.55_0.18_25)] font-medium"
-              }`}
+              ref={(el) => {
+                labelsRef.current[i] = el;
+              }}
+              className="font-mono text-[10px] tracking-widest transition-colors duration-300"
+              style={{ color: "oklch(0.55 0.18 25)", fontWeight: 500 }}
             >
               {name}
             </span>
@@ -223,6 +281,6 @@ export function PipelineFlow({
       <div ref={wrapRef} className="w-full" style={{ height: 160 }}>
         <canvas ref={canvasRef} className="block" />
       </div>
-    </div>
+    </>
   );
 }

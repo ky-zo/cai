@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 const COLS = 58;
 const ROWS = 28;
@@ -14,17 +14,48 @@ type Pt = [number, number];
 function cubicBezier(p0: Pt, p1: Pt, p2: Pt, p3: Pt, t: number): Pt {
   const u = 1 - t;
   return [
-    u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
-    u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
+    u * u * u * p0[0] +
+      3 * u * u * t * p1[0] +
+      3 * u * t * t * p2[0] +
+      t * t * t * p3[0],
+    u * u * u * p0[1] +
+      3 * u * u * t * p1[1] +
+      3 * u * t * t * p2[1] +
+      t * t * t * p3[1],
   ];
 }
 
 const CURVES: [Pt, Pt, Pt, Pt][] = [
-  [[64.37, 71.95], [102.7, -33.29], [181.32, -1.0], [215.24, 31.29]],
-  [[215.24, 31.29], [326.61, 1.39], [351.75, 94.67], [330.2, 144.9]],
-  [[330.2, 144.9], [390.07, 242.97], [263.14, 301.57], [226.02, 271.67]],
-  [[226.02, 271.67], [176.93, 335.05], [97.89, 306.35], [75.14, 239.38]],
-  [[75.14, 239.38], [-37.4, 216.66], [-8.67, 97.07], [64.37, 71.95]],
+  [
+    [64.37, 71.95],
+    [102.7, -33.29],
+    [181.32, -1.0],
+    [215.24, 31.29],
+  ],
+  [
+    [215.24, 31.29],
+    [326.61, 1.39],
+    [351.75, 94.67],
+    [330.2, 144.9],
+  ],
+  [
+    [330.2, 144.9],
+    [390.07, 242.97],
+    [263.14, 301.57],
+    [226.02, 271.67],
+  ],
+  [
+    [226.02, 271.67],
+    [176.93, 335.05],
+    [97.89, 306.35],
+    [75.14, 239.38],
+  ],
+  [
+    [75.14, 239.38],
+    [-37.4, 216.66],
+    [-8.67, 97.07],
+    [64.37, 71.95],
+  ],
 ];
 
 const SEGS = 24;
@@ -40,10 +71,7 @@ function isInShape(px: number, py: number): boolean {
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
     const [xi, yi] = polygon[i];
     const [xj, yj] = polygon[j];
-    if (
-      yi > py !== yj > py &&
-      px < ((xj - xi) * (py - yi)) / (yj - yi) + xi
-    ) {
+    if (yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) {
       inside = !inside;
     }
   }
@@ -92,7 +120,7 @@ function isInEllipse(
   cx: number,
   cy: number,
   rx: number,
-  ry: number
+  ry: number,
 ): boolean {
   const dx = x - cx;
   const dy = y - cy;
@@ -117,7 +145,7 @@ interface EyeParams {
 function buildGrid(
   leftEye: EyeParams,
   rightEye: EyeParams,
-  tick: number
+  tick: number,
 ): string {
   const lines: string[] = [];
 
@@ -159,8 +187,7 @@ function buildGrid(
 
 export function AsciiCloud() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [grid, setGrid] = useState("");
-  const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const preRef = useRef<HTMLPreElement>(null);
   const eyeOffset = useRef({ x: 0, y: 0 });
   const targetOffset = useRef({ x: 0, y: 0 });
   const tick = useRef(0);
@@ -204,7 +231,7 @@ export function AsciiCloud() {
   }, []);
 
   useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [handleMouseMove]);
 
@@ -244,8 +271,10 @@ export function AsciiCloud() {
         (targetOffset.current.y - eyeOffset.current.y) * eyeEase;
 
       // Idle float + mouse lean
-      const floatX = Math.sin(t * 0.4) * 8 + Math.sin(t * 0.9) * 4 + Math.sin(t * 0.15) * 6;
-      const floatY = Math.cos(t * 0.3) * 6 + Math.cos(t * 0.7) * 3 + Math.cos(t * 0.12) * 5;
+      const floatX =
+        Math.sin(t * 0.4) * 8 + Math.sin(t * 0.9) * 4 + Math.sin(t * 0.15) * 6;
+      const floatY =
+        Math.cos(t * 0.3) * 6 + Math.cos(t * 0.7) * 3 + Math.cos(t * 0.12) * 5;
       bodyPos.current.x +=
         (bodyTarget.current.x + floatX - bodyPos.current.x) * 0.04;
       bodyPos.current.y +=
@@ -287,14 +316,24 @@ export function AsciiCloud() {
           ry: bRy,
         };
 
-        setGrid(buildGrid(leftEye, rightEye, tick.current));
-        setTranslate({ x: bodyPos.current.x, y: bodyPos.current.y });
+        const el = preRef.current;
+        if (el) {
+          el.textContent = buildGrid(leftEye, rightEye, tick.current);
+          el.style.transform = `translate(${bodyPos.current.x.toFixed(1)}px, ${bodyPos.current.y.toFixed(1)}px)`;
+        }
       }
 
       rafId.current = requestAnimationFrame(animate);
     };
 
-    setGrid(buildGrid({ ...LEFT_EYE_BASE }, { ...RIGHT_EYE_BASE }, 0));
+    const el = preRef.current;
+    if (el) {
+      el.textContent = buildGrid(
+        { ...LEFT_EYE_BASE },
+        { ...RIGHT_EYE_BASE },
+        0,
+      );
+    }
     rafId.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(rafId.current);
   }, []);
@@ -302,15 +341,13 @@ export function AsciiCloud() {
   return (
     <div ref={containerRef} className="select-none" aria-hidden="true">
       <pre
+        ref={preRef}
         className="font-mono text-[0.45rem] leading-none sm:text-[0.55rem] md:text-[0.65rem] tracking-tight will-change-transform"
         style={{
           color: "var(--muted)",
           opacity: 0.7,
-          transform: `translate(${translate.x.toFixed(1)}px, ${translate.y.toFixed(1)}px)`,
         }}
-      >
-        {grid}
-      </pre>
+      />
     </div>
   );
 }

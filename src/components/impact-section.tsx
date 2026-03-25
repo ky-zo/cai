@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
 import { useScroll } from "motion/react";
+import { useRef } from "react";
 import { MetricsBars } from "./metrics-bars";
 import { PipelineFlow } from "./pipeline-flow";
 
