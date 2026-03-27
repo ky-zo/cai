@@ -1,14 +1,15 @@
 import Image from "next/image";
 import { AsciiCloud } from "@/components/ascii-cloud";
+import { CalButton } from "@/components/cal-button";
 import { HighlightOnScroll } from "@/components/highlight-on-scroll";
-import { PenUnderline } from "@/components/pen-underline";
 import { ImpactSection } from "@/components/impact-section";
-import { ToolChecklist } from "@/components/tool-checklist";
 import {
   AccelerateAnimation,
   MultiplyAnimation,
   PipelineAnimation,
 } from "@/components/offer-animations";
+import { PenUnderline } from "@/components/pen-underline";
+import { ToolChecklist } from "@/components/tool-checklist";
 
 function Section({ children, id }: { children: React.ReactNode; id?: string }) {
   return (
@@ -59,12 +60,9 @@ export default function Home() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 items-center mb-10">
-                <a
-                  href="#contact"
-                  className="font-mono text-xs font-medium px-5 py-2.5 bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 transition-opacity"
-                >
+                <CalButton className="font-mono text-xs font-medium px-5 py-2.5 bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 transition-opacity cursor-pointer">
                   Book an intro call
-                </a>
+                </CalButton>
                 <a
                   href="#offers"
                   className="font-mono text-xs font-medium text-[var(--muted)] hover:text-[var(--foreground)] transition-colors underline underline-offset-4"
@@ -147,20 +145,21 @@ export default function Home() {
               className="text-lg sm:text-xl font-semibold tracking-tight leading-snug mb-6"
               style={{ letterSpacing: "-0.02em" }}
             >
-              You know <HighlightOnScroll>AI changes everything</HighlightOnScroll>, you&apos;re just not sure{" "}
+              You know{" "}
+              <HighlightOnScroll>AI changes everything</HighlightOnScroll>,
+              you&apos;re just not sure{" "}
               <PenUnderline>what to do about it.</PenUnderline>
             </p>
 
             <div className="space-y-4 text-sm text-[var(--muted)]">
               <p>
                 Your engineers are curious but stretched thin. Tools are
-                scattered, process is undefined, and everyone knows
-                they&apos;re moving too slowly.
+                scattered, process is undefined, and everyone knows they&apos;re
+                moving too slowly.
               </p>
               <p>
                 You don&apos;t need a 6-month &ldquo;AI strategy.&rdquo; You
-                need someone who&apos;s done this to show up and start
-                building.
+                need someone who&apos;s done this to show up and start building.
               </p>
             </div>
           </Section>
@@ -217,14 +216,16 @@ export default function Home() {
             </SectionLabel>
 
             <div className="grid sm:grid-cols-3 gap-6 sm:gap-10">
-              {/* Turn your team into AI-first */}
+              {/* Turn your team into AI-first speed */}
               <div>
                 <AccelerateAnimation />
                 <p
                   className="text-lg font-semibold tracking-tight mb-1 mt-2"
                   style={{ letterSpacing: "-0.02em" }}
                 >
-                  Turn your team into AI-first
+                  Turn your team
+                  <br />
+                  into AI-first speed
                 </p>
                 <p className="font-mono text-sm text-[var(--muted)] mb-3">
                   $7,000 &bull; one-time
@@ -254,23 +255,18 @@ export default function Home() {
                     </span>
                     Train the team on tools and patterns
                   </li>
-                  <li className="flex gap-2">
-                    <span className="font-mono text-[var(--accent)] shrink-0">
-                      &gt;
-                    </span>
-                    Operating model for what happens next
-                  </li>
                 </ul>
               </div>
 
-              {/* Hire Fractional AI CTO */}
+              {/* Hire fractional AI & product co-founder */}
               <div>
                 <MultiplyAnimation />
                 <p
                   className="text-lg font-semibold tracking-tight mb-1 mt-2"
                   style={{ letterSpacing: "-0.02em" }}
                 >
-                  Hire Fractional AI CTO
+                  Hire fractional AI
+                  <br />& product co-founder
                 </p>
                 <p className="font-mono text-sm text-[var(--muted)] mb-3">
                   $10,000/mo &bull; ongoing
@@ -309,14 +305,16 @@ export default function Home() {
                 </ul>
               </div>
 
-              {/* Implement AI Orchestrator */}
+              {/* Implement AI Agents orchestrator */}
               <div>
                 <PipelineAnimation />
                 <p
                   className="text-lg font-semibold tracking-tight mb-1 mt-2"
                   style={{ letterSpacing: "-0.02em" }}
                 >
-                  Implement AI Orchestrator
+                  Implement AI
+                  <br />
+                  agents orchestrator
                 </p>
                 <p className="font-mono text-sm text-[var(--muted)] mb-3">
                   $5,000/mo &bull; ongoing
@@ -355,6 +353,12 @@ export default function Home() {
                 </ul>
               </div>
             </div>
+
+            <div className="flex justify-center mt-8">
+              <CalButton className="font-mono text-xs font-medium px-5 py-2.5 bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 transition-opacity cursor-pointer">
+                Book a call
+              </CalButton>
+            </div>
           </Section>
 
           {/* Impact */}
@@ -384,10 +388,10 @@ export default function Home() {
           {/* Testimonial */}
           <div className="border border-[var(--border)] rounded-lg p-6 sm:p-8">
             <p className="text-sm leading-relaxed text-[var(--muted)] mb-6">
-              &ldquo;Kamil got our 11 engineers and 6 QA using AI daily.
-              Introduced Claude Code into real workflows. Created better data
-              flow between customer success and development. This was not a
-              theory exercise — it changed how the company operated.&rdquo;
+              &ldquo;This was the change we needed to move our company to be
+              AI-first. After 2 weeks of work, our team (not only engineers)
+              started using Claude Code on daily basis. We&rsquo;re now
+              automating all the key company processes with AI.&rdquo;
             </p>
 
             <div className="flex items-center justify-between">
@@ -427,19 +431,28 @@ export default function Home() {
                     <span className="font-mono text-[var(--accent)] shrink-0">
                       +
                     </span>
-                    Founder-led software companies
+                    You have a functioning engineering team, but shipping still
+                    feels too slow
                   </li>
                   <li className="flex gap-3">
                     <span className="font-mono text-[var(--accent)] shrink-0">
                       +
                     </span>
-                    Teams shipping a real product
+                    Your team uses AI, but not in a way that compounds every day
                   </li>
                   <li className="flex gap-3">
                     <span className="font-mono text-[var(--accent)] shrink-0">
                       +
                     </span>
-                    Want implementation, not a report
+                    You can see the frontier moving and know your team is behind
+                    it
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="font-mono text-[var(--accent)] shrink-0">
+                      +
+                    </span>
+                    You want your team to build differently, not just experiment
+                    more
                   </li>
                 </ul>
               </div>
@@ -451,15 +464,21 @@ export default function Home() {
                 <ul className="space-y-2.5 text-sm text-[var(--muted)]">
                   <li className="flex gap-3">
                     <span className="font-mono shrink-0">-</span>
-                    Looking for a chatbot vendor
+                    Want AI advice without changing how the team works
                   </li>
                   <li className="flex gap-3">
                     <span className="font-mono shrink-0">-</span>
-                    Want a strategy deck, not changed behavior
+                    Want an outside vendor, not stronger internal leverage
                   </li>
                   <li className="flex gap-3">
                     <span className="font-mono shrink-0">-</span>
-                    No real product or workflows yet
+                    Want a strategy deck, not new habits, workflows, and
+                    standards
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="font-mono shrink-0">-</span>
+                    Are too early for process change to stick because there is
+                    no real team workflow yet
                   </li>
                 </ul>
               </div>
@@ -476,12 +495,12 @@ export default function Home() {
                   <span className="font-mono text-[var(--accent)] shrink-0 mt-0.5 group-open:rotate-90 transition-transform">
                     +
                   </span>
-                  Why not just let the team figure this out?
+                  How do you actually make a team move faster?
                 </summary>
                 <p className="text-sm text-[var(--muted)] mt-4 ml-6 max-w-[50ch]">
-                  Because most teams don&apos;t fail from lack of interest. They
-                  fail from fragmented adoption and no clear process. A sprint
-                  compresses months of experimentation into two focused weeks.
+                  By changing how the team works day to day. The sprint puts in
+                  place the workflows, standards, and AI habits that reduce
+                  drag, raise leverage, and make faster execution repeatable.
                 </p>
               </details>
 
@@ -493,8 +512,9 @@ export default function Home() {
                   Is this training or consulting?
                 </summary>
                 <p className="text-sm text-[var(--muted)] mt-4 ml-6 max-w-[50ch]">
-                  Neither. It&apos;s an embedded operating reset. The goal is
-                  changed behavior, not a slide deck.
+                  Neither in the usual sense. It&apos;s a hands-on operating
+                  reset with implementation. There is teaching involved, but the
+                  goal is changed behavior across the team, not a slide deck.
                 </p>
               </details>
 
@@ -503,11 +523,28 @@ export default function Home() {
                   <span className="font-mono text-[var(--accent)] shrink-0 mt-0.5 group-open:rotate-90 transition-transform">
                     +
                   </span>
-                  Do you work with non-software companies?
+                  Our engineers already use AI. Is this still relevant?
                 </summary>
                 <p className="text-sm text-[var(--muted)] mt-4 ml-6 max-w-[50ch]">
-                  The strongest fit right now is software companies with
-                  engineering and QA teams.
+                  Usually yes. Most teams already use AI in pockets. The problem
+                  is that it&apos;s inconsistent, shallow, or disconnected from
+                  how the team actually ships. The sprint is about making that
+                  leverage real and daily.
+                </p>
+              </details>
+
+              <details className="group py-5">
+                <summary className="text-sm cursor-pointer list-none flex items-start gap-3 font-medium">
+                  <span className="font-mono text-[var(--accent)] shrink-0 mt-0.5 group-open:rotate-90 transition-transform">
+                    +
+                  </span>
+                  Can this help if we&apos;re starting something new or
+                  haven&apos;t launched yet?
+                </summary>
+                <p className="text-sm text-[var(--muted)] mt-4 ml-6 max-w-[50ch]">
+                  Yes, if you already have a functioning team and want to set
+                  modern AI-native workflows and standards early. No, if you are
+                  still too early for process change to matter.
                 </p>
               </details>
             </div>
@@ -522,12 +559,9 @@ export default function Home() {
               If your team knows AI matters but still ships the old way, this is
               the reset.
             </p>
-            <a
-              href="#contact"
-              className="font-mono text-xs font-medium px-5 py-2.5 bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 transition-opacity inline-block"
-            >
+            <CalButton className="font-mono text-xs font-medium px-5 py-2.5 bg-[var(--foreground)] text-[var(--background)] hover:opacity-90 transition-opacity inline-block cursor-pointer">
               Book an intro call
-            </a>
+            </CalButton>
           </Section>
 
           {/* Footer */}

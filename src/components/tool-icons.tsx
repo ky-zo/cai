@@ -167,3 +167,4 @@ export const BackgroundAgentsIcon = (
     <circle cx="12" cy="10" r="2" />
   </svg>
 );
+

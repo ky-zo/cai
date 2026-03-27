@@ -55,10 +55,12 @@ const ROWS: ToolItem[][] = [
 ];
 
 const TOTAL = ROWS.flat().length;
+// Virtual extra steps: the curve keeps growing past the last tag
+const GRAPH_TOTAL = TOTAL + 3;
 const EARLY_VISIBLE_FRAC_BOOST = 0.08;
 
 function getThreshold(index: number) {
-  return index / Math.max(TOTAL - 1, 1);
+  return index / Math.max(GRAPH_TOTAL - 1, 1);
 }
 
 // ── Animated Check Mark ────────────────────────────────
@@ -153,10 +155,10 @@ function Tag({ item, checked }: { item: ToolItem; checked: boolean }) {
 }
 
 // ── Curve math ─────────────────────────────────────────
-const CURVE_K = 4;
+const CURVE_K = 5;
 const CURVE_W = 1000;
-const CURVE_H = 270;
-const CURVE_AMP = 0.9;
+const CURVE_H = 340;
+const CURVE_AMP = 0.92;
 const CURVE_SAMPLES = 80;
 const MAX_ENTRY_LIFT_PX = 12;
 const ENTRY_SETTLE_RANGE = 0.22;
@@ -195,14 +197,35 @@ function entryLift(frac: number, visibleFrac: number) {
   );
 }
 
+// How much the visible portion of the curve should be Y-scaled so early
+// stages look tall, then compress as the full exponential is revealed.
+function yScaleForVisibleFrac(visibleFrac: number) {
+  // Find the peak curve value within the visible range
+  const peakNorm = clamp01(
+    expCurve(visibleFrac) + 0.22 * easeOutQuad(visibleFrac) * (1 - visibleFrac),
+  );
+  if (peakNorm < 0.001) return 1;
+  // Scale so peak fills full container height, clamped to [1, maxBoost]
+  const desired = 1.3;
+  const boost = desired / peakNorm;
+  return Math.min(boost, 8);
+}
+
 function projectCurvePoint(frac: number, scaleX: number) {
   const visibleFrac = visibleFracForScale(scaleX);
   const normalizedX = visibleFrac > 0 ? clamp01(frac / visibleFrac) : 0;
   const lift = entryLift(frac, visibleFrac);
 
+  // Raw Y from curve (0 = top, CURVE_H = bottom baseline)
+  const rawY = curveY(frac);
+  // Distance from baseline (how far up the curve goes)
+  const distFromBase = CURVE_H - rawY;
+  const yScale = yScaleForVisibleFrac(visibleFrac);
+  const scaledY = CURVE_H - distFromBase * yScale;
+
   return {
     x: normalizedX * CURVE_W,
-    y: curveY(frac) - lift,
+    y: scaledY - lift,
   };
 }
 
@@ -240,6 +263,7 @@ const MILESTONES = [
   { at: ROWS[0].length, label: "ai coding" },
   { at: ROWS[0].length + ROWS[1].length, label: "background agents" },
   { at: TOTAL, label: "full orchestration" },
+  { at: GRAPH_TOTAL, label: "autonomous company" },
 ];
 
 // ── Background growth curve ────────────────────────────
@@ -253,8 +277,9 @@ function GrowthCurve({ scaleXMV }: { scaleXMV: MotionValue<number> }) {
 
   return (
     <svg
-      className="absolute inset-0 w-full h-full pointer-events-none"
-      viewBox={`0 0 ${CURVE_W} ${CURVE_H}`}
+      className="absolute bottom-0 left-0 w-full pointer-events-none"
+      style={{ height: "300%" }}
+      viewBox={`0 ${-CURVE_H * 2} ${CURVE_W} ${CURVE_H * 3}`}
       preserveAspectRatio="none"
       fill="none"
       aria-hidden
@@ -274,7 +299,7 @@ function GrowthCurve({ scaleXMV }: { scaleXMV: MotionValue<number> }) {
           <stop offset="100%" stopColor="white" stopOpacity="1" />
         </linearGradient>
         <mask id={`${id}-mask`}>
-          <rect width={CURVE_W} height={CURVE_H} fill={`url(#${id}-mx)`} />
+          <rect y={-CURVE_H * 2} width={CURVE_W} height={CURVE_H * 3} fill={`url(#${id}-mx)`} />
         </mask>
       </defs>
 
@@ -315,7 +340,8 @@ function MilestoneDot({
     const point = projectCurvePoint(frac, sx);
     return `${(point.y / CURVE_H) * 100}%`;
   });
-  const fullOrchestration = label === "full orchestration";
+  const isTopMilestone =
+    label === "full orchestration" || label === "autonomous company";
 
   return (
     <motion.div
@@ -334,7 +360,7 @@ function MilestoneDot({
       />
       <span
         className={`absolute whitespace-nowrap text-[9px] font-mono tracking-wide ${
-          fullOrchestration
+          isTopMilestone
             ? "right-[20px] text-right sm:left-[12px] sm:right-auto sm:text-left"
             : ""
         }`}
@@ -342,8 +368,8 @@ function MilestoneDot({
           color: "oklch(0.5 0.15 145 / 0.55)",
           top: "50%",
           transform: "translateY(-50%)",
-          left: fullOrchestration ? undefined : "12px",
-          right: fullOrchestration ? "20px" : undefined,
+          left: isTopMilestone ? undefined : "12px",
+          right: isTopMilestone ? "20px" : undefined,
         }}
       >
         {label}
@@ -356,7 +382,7 @@ function MilestoneDot({
 function countChecks(progress: number) {
   let count = 0;
 
-  for (let i = 0; i < TOTAL; i++) {
+  for (let i = 0; i < GRAPH_TOTAL; i++) {
     if (progress >= getThreshold(i)) count = i + 1;
   }
 
@@ -365,10 +391,10 @@ function countChecks(progress: number) {
 
 function visibleFracForCheckedCount(checkedCount: number) {
   if (checkedCount <= 0) {
-    return 1 / TOTAL;
+    return 1 / GRAPH_TOTAL;
   }
 
-  const progress = checkedCount / TOTAL;
+  const progress = checkedCount / GRAPH_TOTAL;
   const earlyBoost =
     EARLY_VISIBLE_FRAC_BOOST * easeOutQuad(progress) * (1 - progress);
   return clamp01(progress + earlyBoost);
@@ -392,7 +418,7 @@ export function ToolChecklist({
   const { scrollY } = useScroll();
 
   const [checkedCount, setCheckedCount] = useState(0);
-  const scaleXMV = useMotionValue(TOTAL);
+  const scaleXMV = useMotionValue(GRAPH_TOTAL);
 
   useEffect(() => {
     function updateBounds() {
@@ -462,14 +488,14 @@ export function ToolChecklist({
   let tagIndex = 0;
 
   return (
-    <div ref={containerRef} className="relative pb-20">
+    <div ref={containerRef} className="relative pb-20 overflow-visible">
       <GrowthCurve scaleXMV={scaleXMV} />
 
       {/* Milestone dots — derived from animated scaleX, frame-synced */}
       {MILESTONES.map((m) => (
         <MilestoneDot
           key={m.label}
-          frac={m.at / TOTAL}
+          frac={m.at / GRAPH_TOTAL}
           label={m.label}
           visible={checkedCount >= m.at}
           scaleXMV={scaleXMV}

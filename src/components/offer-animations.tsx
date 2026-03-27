@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { AsciiCloud } from "./ascii-cloud";
 
 // Shared types
 interface Particle {
@@ -216,9 +215,6 @@ export function AccelerateAnimation() {
     const nodeBx = w - padding - NODE_RING_RADIUS * dpr;
     const cy = h / 2;
 
-    // Dotted line
-    drawDottedLine(ctx, nodeAx + NODE_RING_RADIUS * dpr + 4 * dpr, cy, nodeBx - NODE_RING_RADIUS * dpr - 4 * dpr, cy, dpr);
-
     // Mouse displacement
     const mouse = mousePosRef.current;
 
@@ -343,10 +339,6 @@ export function MultiplyAnimation() {
     const nodeBx = w / 2;
     const nodeCx = w - padding - NODE_RING_RADIUS * dpr;
     const cy = h / 2;
-
-    // Single dotted line across
-    drawDottedLine(ctx, nodeAx + NODE_RING_RADIUS * dpr + 4 * dpr, cy, nodeBx - NODE_RING_RADIUS * dpr - 4 * dpr, cy, dpr);
-    drawDottedLine(ctx, nodeBx + NODE_RING_RADIUS * dpr + 4 * dpr, cy, nodeCx - NODE_RING_RADIUS * dpr - 4 * dpr, cy, dpr);
 
     // Mouse displacement
     const mouse = mousePosRef.current;
@@ -512,7 +504,6 @@ export function PipelineAnimation() {
   const checkmarksRef = useRef<{ x: number; y: number; time: number }[]>([]);
   const agentAngleRef = useRef(0);
   const spawnIdxRef = useRef(0);
-  const cloudOverlayRef = useRef<HTMLDivElement>(null);
 
   const animate = useCallback(() => {
     const canvas = canvasRef.current;
@@ -530,8 +521,8 @@ export function PipelineAnimation() {
     const pulse = Math.sin(now / 400) * 0.3 + 0.7;
 
     const padding = 20 * dpr;
-    // 4 input nodes on the left, agent cloud in center-right, production on far right
-    const agentX = w * 0.6;
+    // 4 input nodes on the left, purple agent in center, production on far right
+    const agentX = w * 0.5;
     const prodX = w - padding - NODE_RING_RADIUS * dpr;
     const cy = h / 2;
 
@@ -549,30 +540,7 @@ export function PipelineAnimation() {
       };
     });
 
-    // Measure the real AsciiCloud overlay to position ring + endpoints
-    let cloudHalfW = 25 * dpr; // fallback
-    let cloudRingR = 30 * dpr;
-    const cloudEl = cloudOverlayRef.current;
-    if (cloudEl) {
-      const oRect = cloudEl.getBoundingClientRect();
-      cloudHalfW = (oRect.width / 2) * dpr;
-      cloudRingR = (Math.max(oRect.width, oRect.height) / 2 + 4) * dpr;
-    }
-
-    // Dotted lines from each input to agent cloud
-    for (const node of inputNodes) {
-      drawDottedLine(
-        ctx,
-        node.x + SMALL_NODE_RING_RADIUS * dpr + 2 * dpr,
-        node.y,
-        agentX - cloudHalfW - 4 * dpr,
-        cy,
-        dpr,
-      );
-    }
-
-    // Dotted line agent cloud to production
-    drawDottedLine(ctx, agentX + cloudHalfW + 4 * dpr, cy, prodX - NODE_RING_RADIUS * dpr - 4 * dpr, cy, dpr);
+    const agentNodeR = NODE_RING_RADIUS * dpr;
 
     // Mouse displacement
     const mouse = mousePosRef.current;
@@ -585,42 +553,27 @@ export function PipelineAnimation() {
       drawNode(ctx, node.x + dn.x, node.y + dn.y, dpr, MUTED_RGB, inputScale, inputGlow);
     }
 
-    // Agent — just orbital dot around the AsciiCloud overlay
+    // Agent — purple dot node in the center with orbiting dot
+    const agentScale = lerp(0.5, 1, t);
+    const agentGlow = t * pulse * 0.6;
+    const dAgent = getDisplacement(agentX, cy, mouse, dpr);
+    drawNode(ctx, agentX + dAgent.x, cy + dAgent.y, dpr, PURPLE_RGB, agentScale, agentGlow);
+
+    // Orbiting dot around purple node
     agentAngleRef.current += 0.03;
-    const orbR = cloudRingR + 4 * dpr;
-    const orbX = agentX + Math.cos(agentAngleRef.current) * orbR;
-    const orbY = cy + Math.sin(agentAngleRef.current) * orbR;
+    const orbR = (NODE_RING_RADIUS + 6) * dpr;
+    const orbX = agentX + dAgent.x + Math.cos(agentAngleRef.current) * orbR;
+    const orbY = cy + dAgent.y + Math.sin(agentAngleRef.current) * orbR;
     ctx.beginPath();
     ctx.arc(orbX, orbY, 2 * dpr, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(${PURPLE_RGB[0]}, ${PURPLE_RGB[1]}, ${PURPLE_RGB[2]}, 0.5)`;
     ctx.fill();
 
-    // Production node — green square, small→big on hover
+    // Production node — green dot
     const prodScale = lerp(0.3, 1, t);
     const prodGlow = t * pulse;
-    const sq = lerp(SMALL_NODE_RADIUS, NODE_RADIUS, prodScale) * dpr;
-    const sqr = lerp(SMALL_NODE_RING_RADIUS, NODE_RING_RADIUS, prodScale) * dpr;
-
     const dProd = getDisplacement(prodX, cy, mouse, dpr);
-    const px = prodX + dProd.x;
-    const py = cy + dProd.y;
-
-    if (prodGlow > 0) {
-      ctx.beginPath();
-      ctx.roundRect(px - sqr - 4 * dpr * prodGlow, py - sqr - 4 * dpr * prodGlow, (sqr + 4 * dpr * prodGlow) * 2, (sqr + 4 * dpr * prodGlow) * 2, 4 * dpr);
-      ctx.fillStyle = `rgba(${GREEN_RGB[0]}, ${GREEN_RGB[1]}, ${GREEN_RGB[2]}, ${0.05 * prodGlow})`;
-      ctx.fill();
-    }
-
-    ctx.beginPath();
-    ctx.roundRect(px - sq, py - sq, sq * 2, sq * 2, 3 * dpr);
-    ctx.fillStyle = `rgba(${GREEN_RGB[0]}, ${GREEN_RGB[1]}, ${GREEN_RGB[2]}, ${0.5 + 0.2 * prodScale})`;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.roundRect(px - sqr, py - sqr, sqr * 2, sqr * 2, 4 * dpr);
-    ctx.strokeStyle = `rgba(${GREEN_RGB[0]}, ${GREEN_RGB[1]}, ${GREEN_RGB[2]}, ${0.12 + 0.08 * prodScale})`;
-    ctx.lineWidth = 1.5 * dpr;
-    ctx.stroke();
+    drawNode(ctx, prodX + dProd.x, cy + dProd.y, dpr, GREEN_RGB, prodScale, prodGlow);
 
     // Spawn particles — round-robin from input nodes
     const spawnInterval = lerp(1600, 140, t);
@@ -651,7 +604,7 @@ export function PipelineAnimation() {
         const src = inputNodes[p.sourceIdx];
         const sx = src.x + SMALL_NODE_RING_RADIUS * dpr + 4 * dpr;
         const sy = src.y;
-        const ex = agentX - cloudHalfW - 4 * dpr;
+        const ex = agentX - agentNodeR - 4 * dpr;
         const ey = cy;
 
         if (p.progress > 1) {
@@ -666,8 +619,8 @@ export function PipelineAnimation() {
         p.x = sx + (ex - sx) * p.progress;
         p.y = sy + (ey - sy) * p.progress;
       } else {
-        const sx = agentX + cloudHalfW + 4 * dpr;
-        const ex = prodX - sqr - 4 * dpr;
+        const sx = agentX + agentNodeR + 4 * dpr;
+        const ex = prodX - NODE_RING_RADIUS * dpr - 4 * dpr;
 
         if (p.progress > 1) {
           checkmarksRef.current.push({ x: prodX, y: cy, time: now });
@@ -729,27 +682,12 @@ export function PipelineAnimation() {
   }, [animate]);
 
   return (
-    <div className="relative w-full h-[100px]">
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full"
-        onMouseEnter={() => setHovered(true)}
-        onMouseMove={onMouseMove}
-        onMouseLeave={onMouseLeave}
-      />
-      <div
-        ref={cloudOverlayRef}
-        className="absolute pointer-events-none"
-        style={{
-          left: "60%",
-          top: "50%",
-          transform: "translate(-50%, -50%) scale(0.09)",
-          transformOrigin: "center",
-          "--muted": "rgb(150, 80, 200)",
-        } as React.CSSProperties}
-      >
-        <AsciiCloud />
-      </div>
-    </div>
+    <canvas
+      ref={canvasRef}
+      className="w-full h-[100px]"
+      onMouseEnter={() => setHovered(true)}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+    />
   );
 }
