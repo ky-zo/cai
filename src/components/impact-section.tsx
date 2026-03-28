@@ -3,7 +3,7 @@
 import { useScroll } from "motion/react";
 import { useRef } from "react";
 import { MetricsBars } from "./metrics-bars";
-import { PipelineFlow } from "./pipeline-flow";
+import { PipelineGradientStroke } from "./pipeline-gradient-stroke";
 
 export function ImpactSection() {
   const ref = useRef<HTMLDivElement>(null);
@@ -16,7 +16,7 @@ export function ImpactSection() {
     <div ref={ref} className="relative">
       <MetricsBars scrollYProgress={scrollYProgress} />
       <div className="mt-10">
-        <PipelineFlow scrollYProgress={scrollYProgress} />
+        <PipelineGradientStroke scrollYProgress={scrollYProgress} />
       </div>
     </div>
   );

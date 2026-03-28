@@ -27,7 +27,8 @@ interface Dot {
   colorIdx: number;
 }
 
-export function PipelineFlow({
+/** Gradient Stroke — pipe walls change color based on stage state (green=open, amber=closed) */
+export function PipelineGradientStroke({
   scrollYProgress,
 }: {
   scrollYProgress: MotionValue<number>;
@@ -95,6 +96,16 @@ export function PipelineFlow({
       return Math.max(minH, result);
     };
 
+    // Get transition value at a given x position (interpolated from stages)
+    const openAt = (x: number) => {
+      const stageIdx = x * STAGES.length;
+      const i = Math.floor(stageIdx);
+      const frac = stageIdx - i;
+      const a = i >= 0 && i < STAGES.length ? s.transitions[i] : 1;
+      const b = i + 1 < STAGES.length ? s.transitions[i + 1] : a;
+      return a + (b - a) * frac;
+    };
+
     const spd = (x: number) => {
       const h = half(x);
       const openness = (h - minH) / (maxH - minH);
@@ -102,7 +113,8 @@ export function PipelineFlow({
     };
 
     const frame = (ts: number) => {
-      const dt = s.lastFrameTs === 0 ? 16.67 : Math.min(ts - s.lastFrameTs, 48);
+      const dt =
+        s.lastFrameTs === 0 ? 16.67 : Math.min(ts - s.lastFrameTs, 48);
       s.lastFrameTs = ts;
 
       if (!visible) {
@@ -144,7 +156,6 @@ export function PipelineFlow({
         }
       }
 
-      // Spawn
       s.tick++;
       if (s.tick % 2 === 0 && dots.length < MAX_DOTS) {
         dots.push({
@@ -155,10 +166,8 @@ export function PipelineFlow({
         });
       }
 
-      // Sort dots by x so we can enforce spacing at bottlenecks
       dots.sort((a, b) => a.x - b.x);
 
-      // Build bottleneck info
       const bottlenecks: { center: number; closedness: number }[] = [];
       for (let i = 0; i < STAGES.length; i++) {
         const closedness = 1 - s.transitions[i];
@@ -170,12 +179,9 @@ export function PipelineFlow({
         }
       }
 
-      // Update positions
       for (let di = 0; di < dots.length; di++) {
         const d = dots[di];
         let s2 = spd(d.x);
-
-        // Drip through bottlenecks: enforce spacing, slow gradually
         for (const b of bottlenecks) {
           const approachZone = 0.18;
           const dist = b.center - d.x;
@@ -186,18 +192,13 @@ export function PipelineFlow({
               const gap = ahead.x - d.x;
               if (gap > minGap * 2) break;
               if (ahead.x > b.center - approachZone && gap < minGap) {
-                // Ease off based on how far from bottleneck center
-                // Dots far away slow gently, dots close stall hard
-                const farness = dist / approachZone; // 1 = far, 0 = at center
-                const throttle = 0.03 + 0.7 * farness * farness;
-                s2 *= throttle;
+                const farness = dist / approachZone;
+                s2 *= 0.03 + 0.7 * farness * farness;
                 break;
               }
             }
           }
         }
-
-        // Jitter speed each frame so clumps disperse when released
         const jitter = 0.8 + Math.random() * 0.4;
         d.x += d.speed * s2 * jitter;
         d.y += (Math.random() - 0.5) * 0.004;
@@ -209,23 +210,37 @@ export function PipelineFlow({
       // --- Draw ---
       ctx.clearRect(0, 0, w, h);
 
-      // Pipe walls
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = "#ccc9c3";
+      // Pipe walls — drawn in short segments with color based on openness
+      const segments = 200;
+      ctx.lineWidth = 1.5;
       for (const sign of [-1, 1]) {
-        ctx.beginPath();
-        for (let i = 0; i <= 200; i++) {
-          const nx = i / 200;
-          const px = nx * w;
-          const py = cy + sign * half(nx) * ps;
-          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        for (let i = 0; i < segments; i++) {
+          const nx0 = i / segments;
+          const nx1 = (i + 1) / segments;
+          const px0 = nx0 * w;
+          const px1 = nx1 * w;
+          const py0 = cy + sign * half(nx0) * ps;
+          const py1 = cy + sign * half(nx1) * ps;
+
+          const o = openAt((nx0 + nx1) / 2);
+          // Lerp: closed = amber(191,74,48), open = green(57,211,83), neutral = gray
+          const r = Math.round(191 + (57 - 191) * o);
+          const g = Math.round(74 + (211 - 74) * o);
+          const b2 = Math.round(48 + (83 - 48) * o);
+          const alpha = 0.35 + o * 0.35;
+
+          ctx.strokeStyle = `rgba(${r}, ${g}, ${b2}, ${alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(px0, py0);
+          ctx.lineTo(px1, py1);
+          ctx.stroke();
         }
-        ctx.stroke();
       }
 
       // Stage dividers
       ctx.setLineDash([3, 5]);
       ctx.strokeStyle = "#ccc9c340";
+      ctx.lineWidth = 1;
       for (let i = 1; i < STAGES.length; i++) {
         const px = (i / STAGES.length) * w;
         ctx.beginPath();
@@ -235,22 +250,7 @@ export function PipelineFlow({
       }
       ctx.setLineDash([]);
 
-      // Bottleneck indicators for blocked stages
-      for (let i = 0; i < STAGES.length; i++) {
-        if (s.transitions[i] < 0.9) {
-          const bx = ((i + 0.5) / STAGES.length) * w;
-          const alpha = 0.3 * (1 - s.transitions[i]);
-          ctx.setLineDash([2, 4]);
-          ctx.strokeStyle = `rgba(191, 74, 48, ${alpha})`;
-          ctx.beginPath();
-          ctx.moveTo(bx, cy - 0.44 * ps);
-          ctx.lineTo(bx, cy + 0.44 * ps);
-          ctx.stroke();
-          ctx.setLineDash([]);
-        }
-      }
-
-      // Green glowing squares
+      // Green squares
       ctx.save();
       ctx.shadowColor = "#39d35380";
       ctx.shadowBlur = 5;
@@ -290,7 +290,6 @@ export function PipelineFlow({
           </div>
         ))}
       </div>
-
       <div ref={wrapRef} className="w-full" style={{ height: 160 }}>
         <canvas ref={canvasRef} className="block" />
       </div>

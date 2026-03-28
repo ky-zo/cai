@@ -111,7 +111,6 @@ for (let y = 0; y < ROWS; y++) {
 }
 
 // Eyes positioned in SVG space, mapped to grid
-// SVG center ~(173, 153), eyes slightly above center
 export const LEFT_EYE_BASE = { cx: 23, cy: 12, rx: 3.5, ry: 3.8 };
 export const RIGHT_EYE_BASE = { cx: 37, cy: 12, rx: 3.5, ry: 3.8 };
 
@@ -145,52 +144,43 @@ interface EyeParams {
   ry: number;
 }
 
-function buildGrid(
+function getChar(
+  x: number,
+  y: number,
   leftEye: EyeParams,
   rightEye: EyeParams,
   tick: number,
 ): string {
-  const lines: string[] = [];
+  if (!cloudMask[y][x]) return "\u00A0"; // non-breaking space to preserve layout
 
-  for (let y = 0; y < ROWS; y++) {
-    let line = "";
-    for (let x = 0; x < COLS; x++) {
-      if (!cloudMask[y][x]) {
-        line += " ";
-        continue;
-      }
-
-      if (
-        isInEllipse(x, y, leftEye.cx, leftEye.cy, leftEye.rx, leftEye.ry) ||
-        isInEllipse(x, y, rightEye.cx, rightEye.cy, rightEye.rx, rightEye.ry)
-      ) {
-        line += " ";
-        continue;
-      }
-
-      if (edgeMask[y][x]) {
-        line += randomLightChar();
-        continue;
-      }
-
-      const phase = (tick + x * 2 + y * 3) % 6;
-      if (phase < 2) {
-        line += randomChar();
-      } else if (phase < 4) {
-        line += randomChar().toUpperCase();
-      } else {
-        line += randomLightChar();
-      }
-    }
-    lines.push(line);
+  if (
+    isInEllipse(x, y, leftEye.cx, leftEye.cy, leftEye.rx, leftEye.ry) ||
+    isInEllipse(x, y, rightEye.cx, rightEye.cy, rightEye.rx, rightEye.ry)
+  ) {
+    return "\u00A0";
   }
 
-  return lines.join("\n");
+  if (edgeMask[y][x]) return randomLightChar();
+
+  const phase = (tick + x * 2 + y * 3) % 6;
+  if (phase < 2) return randomChar();
+  if (phase < 4) return randomChar().toUpperCase();
+  return randomLightChar();
 }
+
+// -- Fluid repulsion physics --
+const REPULSION_RADIUS = 6; // in grid cells
+const REPULSION_STRENGTH = 3;
+const SPRING_K = 0.025;
+const DAMPING = 0.86;
+const MAX_DISPLACEMENT = 10; // max pixels a char can move from origin
 
 export function AsciiCloud() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const preRef = useRef<HTMLPreElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const charEls = useRef<(HTMLSpanElement | null)[][]>([]);
+  const displacements = useRef<{ x: number; y: number; vx: number; vy: number }[][]>([]);
+
   const eyeOffset = useRef({ x: 0, y: 0 });
   const targetOffset = useRef({ x: 0, y: 0 });
   const tick = useRef(0);
@@ -206,10 +196,30 @@ export function AsciiCloud() {
   const idleGazeTarget = useRef({ x: 0, y: 0 });
   const nextGazeChange = useRef(1500 + Math.random() * 2000);
   const gazeElapsed = useRef(0);
-
   const isGyroActive = useRef(false);
 
+  // Mouse position in client coordinates
+  const mouseClient = useRef({ x: -9999, y: -9999 });
+
+  // Ripple waves triggered by click
+  const ripples = useRef<{ cx: number; cy: number; t: number; speed: number }[]>([]);
+
+  const handleClick = useCallback((e: MouseEvent) => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const rect = grid.getBoundingClientRect();
+    // Store click position in pixels relative to grid
+    ripples.current.push({
+      cx: e.clientX - rect.left,
+      cy: e.clientY - rect.top,
+      t: 0,
+      speed: 3, // pixels per frame the wave front expands
+    });
+  }, []);
+
   const handleMouseMove = useCallback((e: MouseEvent) => {
+    mouseClient.current = { x: e.clientX, y: e.clientY };
+
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
@@ -236,10 +246,8 @@ export function AsciiCloud() {
   }, []);
 
   const handleOrientation = useCallback((e: DeviceOrientationEvent) => {
-    // gamma: left-right tilt (-90 to 90), beta: front-back tilt (-180 to 180)
     const gamma = e.gamma ?? 0;
     const beta = e.beta ?? 0;
-    // Normalize: phone held upright ~beta=90, so offset from that
     const tiltX = Math.max(-30, Math.min(30, gamma)) / 30;
     const tiltY = Math.max(-30, Math.min(30, beta - 60)) / 30;
     const maxShift = 2.8;
@@ -261,39 +269,76 @@ export function AsciiCloud() {
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    const container = containerRef.current;
+    container?.addEventListener("click", handleClick);
 
-    // Device orientation for mobile Safari (iOS)
     const DOE = DeviceOrientationEvent as typeof DeviceOrientationEvent & {
       requestPermission?: () => Promise<"granted" | "denied">;
     };
     if (typeof DOE.requestPermission === "function") {
-      // iOS 13+ requires a user gesture to request permission
       const requestGyro = () => {
         DOE.requestPermission!().then((state) => {
           if (state === "granted") {
-            window.addEventListener("deviceorientation", handleOrientation, { passive: true });
+            window.addEventListener("deviceorientation", handleOrientation, {
+              passive: true,
+            });
           }
         });
         window.removeEventListener("touchstart", requestGyro);
       };
       window.addEventListener("touchstart", requestGyro, { once: true });
     } else if ("DeviceOrientationEvent" in window) {
-      window.addEventListener("deviceorientation", handleOrientation, { passive: true });
+      window.addEventListener("deviceorientation", handleOrientation, {
+        passive: true,
+      });
     }
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("deviceorientation", handleOrientation);
+      container?.removeEventListener("click", handleClick);
     };
-  }, [handleMouseMove, handleOrientation]);
+  }, [handleMouseMove, handleOrientation, handleClick]);
 
+  // Build DOM and run animation
   useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    // Initialize per-character state
+    for (let y = 0; y < ROWS; y++) {
+      charEls.current[y] = [];
+      displacements.current[y] = [];
+      for (let x = 0; x < COLS; x++) {
+        displacements.current[y][x] = { x: 0, y: 0, vx: 0, vy: 0 };
+      }
+    }
+
+    // Create DOM: rows of spans
+    for (let y = 0; y < ROWS; y++) {
+      const row = document.createElement("div");
+      row.style.display = "flex";
+      row.style.lineHeight = "1";
+      for (let x = 0; x < COLS; x++) {
+        const span = document.createElement("span");
+        span.style.display = "inline-block";
+        span.style.width = "1ch";
+        span.style.textAlign = "center";
+        span.textContent = cloudMask[y][x] ? randomChar() : "\u00A0";
+        row.appendChild(span);
+        charEls.current[y][x] = span;
+      }
+      grid.appendChild(row);
+    }
+
     let elapsed = 0;
     const startTime = performance.now();
     let visible = true;
 
     const io = new IntersectionObserver(
-      ([e]) => { visible = e.isIntersecting; },
+      ([e]) => {
+        visible = e.isIntersecting;
+      },
       { threshold: 0 },
     );
     if (containerRef.current) io.observe(containerRef.current);
@@ -305,14 +350,18 @@ export function AsciiCloud() {
       }
 
       const t = (time - startTime) / 1000;
+      const dt = time - (lastCharUpdate.current || time);
 
       // Idle gaze
       const mouseIdleMs = time - lastMouseMove.current;
-      if (isMouseActive.current && mouseIdleMs > 2000 && !isGyroActive.current) {
+      if (
+        isMouseActive.current &&
+        mouseIdleMs > 2000 &&
+        !isGyroActive.current
+      ) {
         isMouseActive.current = false;
       }
       if (!isMouseActive.current) {
-        const dt = time - (lastCharUpdate.current || time);
         gazeElapsed.current += dt;
         if (gazeElapsed.current > nextGazeChange.current) {
           const angle = Math.random() * Math.PI * 2;
@@ -327,25 +376,29 @@ export function AsciiCloud() {
         targetOffset.current = { ...idleGazeTarget.current };
       }
 
-      // Eye follow — snappy for mouse, smooth drift for idle gaze
+      // Eye follow
       const eyeEase = isMouseActive.current ? 0.3 : 0.06;
       eyeOffset.current.x +=
         (targetOffset.current.x - eyeOffset.current.x) * eyeEase;
       eyeOffset.current.y +=
         (targetOffset.current.y - eyeOffset.current.y) * eyeEase;
 
-      // Idle float + mouse lean
+      // Body float
       const floatX =
-        Math.sin(t * 0.4) * 8 + Math.sin(t * 0.9) * 4 + Math.sin(t * 0.15) * 6;
+        Math.sin(t * 0.4) * 8 +
+        Math.sin(t * 0.9) * 4 +
+        Math.sin(t * 0.15) * 6;
       const floatY =
-        Math.cos(t * 0.3) * 6 + Math.cos(t * 0.7) * 3 + Math.cos(t * 0.12) * 5;
+        Math.cos(t * 0.3) * 6 +
+        Math.cos(t * 0.7) * 3 +
+        Math.cos(t * 0.12) * 5;
       bodyPos.current.x +=
         (bodyTarget.current.x + floatX - bodyPos.current.x) * 0.04;
       bodyPos.current.y +=
         (bodyTarget.current.y + floatY - bodyPos.current.y) * 0.04;
 
-      // Blink logic
-      elapsed += time - (lastCharUpdate.current || time);
+      // Blink
+      elapsed += dt;
       if (!blinking.current && elapsed > nextBlink.current) {
         blinking.current = true;
         blinkStart.current = time;
@@ -356,7 +409,98 @@ export function AsciiCloud() {
         blinking.current = false;
       }
 
-      // Refresh ~24fps
+      // -- Advance ripple waves --
+      const RIPPLE_WIDTH = 30; // wave band width in px
+      const RIPPLE_STRENGTH = 4;
+      const RIPPLE_MAX_RADIUS = 400;
+      for (let i = ripples.current.length - 1; i >= 0; i--) {
+        ripples.current[i].t += ripples.current[i].speed;
+        if (ripples.current[i].t > RIPPLE_MAX_RADIUS) {
+          ripples.current.splice(i, 1);
+        }
+      }
+
+      // -- Physics: run every frame for smooth fluid motion --
+      const gridRect = grid.getBoundingClientRect();
+      const cellW = gridRect.width / COLS;
+      const cellH = gridRect.height / ROWS;
+      const mxPx = mouseClient.current.x - gridRect.left;
+      const myPx = mouseClient.current.y - gridRect.top;
+      const radiusPx = REPULSION_RADIUS * cellW;
+
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+          if (!cloudMask[y][x]) continue;
+
+          const d = displacements.current[y][x];
+          const cxPx = (x + 0.5) * cellW;
+          const cyPx = (y + 0.5) * cellH;
+          // Use current displaced position, not original
+          const curX = cxPx + d.x;
+          const curY = cyPx + d.y;
+          const dx = curX - mxPx;
+          const dy = curY - myPx;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          // Repulsion force
+          if (dist < radiusPx && dist > 1) {
+            const falloff = 1 - dist / radiusPx;
+            const force = REPULSION_STRENGTH * falloff * falloff;
+            d.vx += (dx / dist) * force;
+            d.vy += (dy / dist) * force;
+          }
+
+          // Ripple wave forces
+          for (const ripple of ripples.current) {
+            const rdx = cxPx - ripple.cx;
+            const rdy = cyPx - ripple.cy;
+            const rDist = Math.sqrt(rdx * rdx + rdy * rdy);
+            // Character is near the expanding wave front
+            const waveFront = ripple.t;
+            const distFromFront = Math.abs(rDist - waveFront);
+            if (distFromFront < RIPPLE_WIDTH && rDist > 1) {
+              // Sine-shaped pulse: peaks at wavefront, fades at edges
+              const envelope = Math.cos((distFromFront / RIPPLE_WIDTH) * Math.PI * 0.5);
+              // Fade out as wave expands
+              const decay = 1 - ripple.t / RIPPLE_MAX_RADIUS;
+              const force = RIPPLE_STRENGTH * envelope * decay * decay;
+              d.vx += (rdx / rDist) * force;
+              d.vy += (rdy / rDist) * force;
+            }
+          }
+
+          // Spring back to origin
+          d.vx -= d.x * SPRING_K;
+          d.vy -= d.y * SPRING_K;
+
+          // Damping
+          d.vx *= DAMPING;
+          d.vy *= DAMPING;
+
+          // Integrate
+          d.x += d.vx;
+          d.y += d.vy;
+
+          // Clamp displacement
+          const mag = Math.sqrt(d.x * d.x + d.y * d.y);
+          if (mag > MAX_DISPLACEMENT) {
+            d.x = (d.x / mag) * MAX_DISPLACEMENT;
+            d.y = (d.y / mag) * MAX_DISPLACEMENT;
+          }
+
+          // Apply transform
+          const span = charEls.current[y]?.[x];
+          if (span) {
+            if (Math.abs(d.x) > 0.1 || Math.abs(d.y) > 0.1) {
+              span.style.transform = `translate(${d.x.toFixed(1)}px, ${d.y.toFixed(1)}px)`;
+            } else {
+              span.style.transform = "";
+            }
+          }
+        }
+      }
+
+      // -- Character content update ~24fps --
       if (time - lastCharUpdate.current > 42) {
         tick.current++;
         lastCharUpdate.current = time;
@@ -380,35 +524,35 @@ export function AsciiCloud() {
           ry: bRy,
         };
 
-        const el = preRef.current;
-        if (el) {
-          el.textContent = buildGrid(leftEye, rightEye, tick.current);
-          el.style.transform = `translate(${bodyPos.current.x.toFixed(1)}px, ${bodyPos.current.y.toFixed(1)}px)`;
+        for (let y = 0; y < ROWS; y++) {
+          for (let x = 0; x < COLS; x++) {
+            const span = charEls.current[y]?.[x];
+            if (span) {
+              span.textContent = getChar(x, y, leftEye, rightEye, tick.current);
+            }
+          }
         }
+
+        // Body float transform on the grid container
+        grid.style.transform = `translate(${bodyPos.current.x.toFixed(1)}px, ${bodyPos.current.y.toFixed(1)}px)`;
       }
 
       rafId.current = requestAnimationFrame(animate);
     };
 
-    const el = preRef.current;
-    if (el) {
-      el.textContent = buildGrid(
-        { ...LEFT_EYE_BASE },
-        { ...RIGHT_EYE_BASE },
-        0,
-      );
-    }
     rafId.current = requestAnimationFrame(animate);
     return () => {
       cancelAnimationFrame(rafId.current);
       io.disconnect();
+      // Clean up DOM
+      while (grid.firstChild) grid.removeChild(grid.firstChild);
     };
   }, []);
 
   return (
     <div ref={containerRef} className="select-none" aria-hidden="true">
-      <pre
-        ref={preRef}
+      <div
+        ref={gridRef}
         className="font-mono text-[0.45rem] leading-none sm:text-[0.55rem] md:text-[0.65rem] tracking-tight will-change-transform"
         style={{
           color: "var(--muted)",
