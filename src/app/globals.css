@@ -140,7 +140,10 @@
 }
 
 .highlight-on-scroll {
-  background-image: linear-gradient(oklch(0.85 0.18 90 / 0.7), oklch(0.85 0.18 90 / 0.7));
+  background-image: linear-gradient(
+    oklch(0.85 0.18 90 / 0.7),
+    oklch(0.85 0.18 90 / 0.7)
+  );
   background-size: 0% 40%;
   background-repeat: no-repeat;
   background-position: 0 85%;
@@ -164,7 +167,29 @@
   animation: pen-draw 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+.problem-dot {
+  background-color: var(--border);
+  box-shadow: 0 0 0 oklch(0.6 0.2 25 / 0);
+  transition:
+    background-color 0.6s ease-out,
+    box-shadow 0.6s ease-out;
+}
+
+.problem-dot[data-in-view="true"] {
+  background-color: oklch(0.6 0.2 25);
+  box-shadow:
+    0 0 4px oklch(0.6 0.2 25 / 0.45),
+    0 0 10px oklch(0.6 0.2 25 / 0.18);
+}
+
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; box-shadow: 0 0 6px oklch(0.62 0.17 145 / 0.4); }
-  50% { opacity: 0.6; box-shadow: 0 0 2px oklch(0.62 0.17 145 / 0.15); }
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 6px oklch(0.62 0.17 145 / 0.4);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 2px oklch(0.62 0.17 145 / 0.15);
+  }
 }

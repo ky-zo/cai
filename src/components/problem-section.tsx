@@ -1,6 +1,7 @@
-import { Section, SectionLabel } from "@/components/section";
 import { HighlightOnScroll } from "@/components/highlight-on-scroll";
 import { PenUnderline } from "@/components/pen-underline";
+import { ProblemSignalsList } from "@/components/problem-signals-list";
+import { Section, SectionLabel } from "@/components/section";
 
 export function ProblemSection() {
   return (
@@ -22,21 +23,13 @@ export function ProblemSection() {
         style={{ letterSpacing: "-0.02em" }}
       >
         You know <HighlightOnScroll>AI changes everything</HighlightOnScroll>,
-        you&apos;re just not sure{" "}
-        <PenUnderline>what to do about it.</PenUnderline>
+        but your company{" "}
+        <PenUnderline punctuation="exclamation">
+          still operates the old way.
+        </PenUnderline>
       </p>
 
-      <div className="space-y-4 text-sm text-[var(--muted)]">
-        <p>
-          Your engineers are curious but stretched thin. Tools are scattered,
-          process is undefined, and everyone knows they&apos;re moving too
-          slowly.
-        </p>
-        <p>
-          You don&apos;t need a 6-month &ldquo;AI strategy.&rdquo; You need
-          someone who&apos;s done this to show up and start building.
-        </p>
-      </div>
+      <ProblemSignalsList />
     </Section>
   );
 }

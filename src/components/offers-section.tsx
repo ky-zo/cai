@@ -13,9 +13,9 @@ export function OffersSection() {
         <span
           className="inline-block size-2.5 rounded-[2px]"
           style={{
-            backgroundColor: "oklch(0.6 0.17 145)",
+            backgroundColor: "oklch(0.55 0.15 250)",
             boxShadow:
-              "0 0 6px oklch(0.6 0.17 145 / 0.6), 0 0 14px oklch(0.6 0.17 145 / 0.3)",
+              "0 0 6px oklch(0.55 0.15 250 / 0.6), 0 0 14px oklch(0.55 0.15 250 / 0.3)",
           }}
         />
         The Offers
